@@ -1,20 +1,23 @@
 from rouge import Rouge
 
 def compute_metrics(tokenizer, pred, config):
+    labels_ids = pred.label_ids
+    pred_ids = pred.predictions
+    
+    pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
+    labels_ids[labels_ids == -100] = tokenizer.pad_token_id
+    label_str = tokenizer.batch_decode(labels_ids, skip_special_tokens=True)
+    
+    # train/default.yaml의 remove_tokens 설정 사용
+    for token in config.train.inference.remove_tokens:
+        pred_str = [pred.replace(token, '') for pred in pred_str]
+        label_str = [label.replace(token, '') for label in label_str]
+    
     rouge = Rouge()
-    predictions = pred.predictions
-    labels = pred.label_ids
+    scores = rouge.get_scores(pred_str, label_str, avg=True)
     
-    predictions[predictions == -100] = tokenizer.pad_token_id
-    labels[labels == -100] = tokenizer.pad_token_id
-    
-    decoded_preds = tokenizer.batch_decode(predictions, clean_up_tokenization_spaces=True)
-    labels = tokenizer.batch_decode(labels, clean_up_tokenization_spaces=True)
-    
-    # Remove special tokens
-    for token in config.inference.remove_tokens:
-        decoded_preds = [sent.replace(token, " ") for sent in decoded_preds]
-        labels = [sent.replace(token, " ") for sent in labels]
-    
-    results = rouge.get_scores(decoded_preds, labels, avg=True)
-    return {key: value["f"] for key, value in results.items()} 
+    return {
+        'rouge1_f1': scores['rouge-1']['f'],
+        'rouge2_f1': scores['rouge-2']['f'],
+        'rougeL_f1': scores['rouge-l']['f']
+    } 

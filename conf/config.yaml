@@ -1,0 +1,27 @@
+defaults:
+  - model: kobart
+  - train: default
+  - _self_
+
+general:
+  seed: 42
+  data_path: "./data"
+  output_dir: "./outputs"
+
+inference:
+  batch_size: 32
+  ckt_path: "outputs/checkpoint-500"
+  no_repeat_ngram_size: 3
+  early_stopping: true
+  generate_max_length: 128
+  num_beams: 5
+  remove_tokens: 
+    - <usr>
+    - <s>
+    - </s>
+    - <pad>
+
+wandb:
+  project: "dialogue-summary"
+  entity: null
+  name: "baseline" 
