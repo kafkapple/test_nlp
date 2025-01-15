@@ -49,13 +49,7 @@ class DialogueDataset(Dataset):
         self.encoder_input = encoder_input
         self.decoder_input = decoder_input
         self.labels = labels
-        if not os.path.exists("data"):
-            print("Downloading data...")
-            data_dir = "https://aistages-api-public-prod.s3.amazonaws.com/app/Competitions/000342/data/data.tar.gz"
-            code_dir = "https://aistages-api-public-prod.s3.amazonaws.com/app/Competitions/000342/data/code.tar.gz"
-            download_and_extract(data_dir, "./")
-            download_and_extract(code_dir, "./")
-            print("Downloaded data")
+        
         
     def __getitem__(self, idx):
         item = {key: val[idx].clone().detach() for key, val in self.encoder_input.items()}
@@ -79,6 +73,13 @@ class DataProcessor:
         self.config = config
         
     def prepare_data(self, data_path, is_train=True):
+        if not os.path.exists("data"):
+            print("Downloading data...")
+            data_dir = "https://aistages-api-public-prod.s3.amazonaws.com/app/Competitions/000342/data/data.tar.gz"
+            code_dir = "https://aistages-api-public-prod.s3.amazonaws.com/app/Competitions/000342/data/code.tar.gz"
+            download_and_extract(data_dir, "./")
+            download_and_extract(code_dir, "./")
+            print("Downloaded data")
         df = pd.read_csv(data_path)
         if is_train:
             return self._prepare_train_data(df)
