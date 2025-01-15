@@ -90,7 +90,7 @@ class DialogueInference:
         
         return results
 
-@hydra.main(version_base="1.2", config_path="../conf", config_name="config")
+@hydra.main(version_base="1.2", config_path="../config", config_name="config")
 def main(cfg: DictConfig):
     inferencer = DialogueInference(cfg)
     test_file_path = f"{cfg.general.data_path}/test.csv"
