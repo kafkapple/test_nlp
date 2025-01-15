@@ -13,36 +13,39 @@ def download_and_extract(url, output_dir="./"):
         url (str): 다운로드할 파일의 URL.
         output_dir (str): 파일을 저장하고 압축을 풀 디렉토리 경로.
     """
+    if not os.path.exists("data"):
     # 다운로드 디렉토리 생성
-    os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(output_dir, exist_ok=True)
 
-    # 파일 이름 추출
-    filename = os.path.basename(url)
+        # 파일 이름 추출
+        filename = os.path.basename(url)
 
-    # 다운로드 파일 경로
-    download_path = os.path.join(output_dir, filename)
+        # 다운로드 파일 경로
+        download_path = os.path.join(output_dir, filename)
 
-    # 파일 다운로드
-    print(f"Downloading {url}...")
-    wget.download(url, download_path)
-    print(f"\nDownloaded to {download_path}")
+        # 파일 다운로드
+        print(f"Downloading {url}...")
+        wget.download(url, download_path)
+        print(f"\nDownloaded to {download_path}")
 
-    # 압축 해제
-    print("Extracting files...")
-    if filename.endswith(".tar.gz") or filename.endswith(".tgz"):
-        with tarfile.open(download_path, "r:gz") as tar:
-            tar.extractall(output_dir)
-            print(f"Extracted to {output_dir}")
-    elif filename.endswith(".zip"):
-        with zipfile.ZipFile(download_path, "r") as zip_ref:
-            zip_ref.extractall(output_dir)
-            print(f"Extracted to {output_dir}")
+        # 압축 해제
+        print("Extracting files...")
+        if filename.endswith(".tar.gz") or filename.endswith(".tgz"):
+            with tarfile.open(download_path, "r:gz") as tar:
+                tar.extractall(output_dir)
+                print(f"Extracted to {output_dir}")
+        elif filename.endswith(".zip"):
+            with zipfile.ZipFile(download_path, "r") as zip_ref:
+                zip_ref.extractall(output_dir)
+                print(f"Extracted to {output_dir}")
+        else:
+            print("Unsupported file type. No extraction performed.")
+
+        # 원본 압축 파일 제거 (선택)
+        os.remove(download_path)
+        print(f"Removed compressed file {download_path}")
     else:
-        print("Unsupported file type. No extraction performed.")
-
-    # 원본 압축 파일 제거 (선택)
-    os.remove(download_path)
-    print(f"Removed compressed file {download_path}")
+        print("data directory already exists")
 
 class DialogueDataset(Dataset):
     def __init__(self, encoder_input, decoder_input=None, labels=None, tokenizer=None):
@@ -77,13 +80,13 @@ class DataProcessor:
         self.config = config
         
     def prepare_data(self, data_path, is_train=True):
-        if not os.path.exists("data"):
-            print("Downloading data...")
-            data_dir = "https://aistages-api-public-prod.s3.amazonaws.com/app/Competitions/000342/data/data.tar.gz"
-            code_dir = "https://aistages-api-public-prod.s3.amazonaws.com/app/Competitions/000342/data/code.tar.gz"
-            download_and_extract(data_dir, "./")
-            download_and_extract(code_dir, "./")
-            print("Downloaded data")
+        
+        print("Downloading data...")
+        data_dir = "https://aistages-api-public-prod.s3.amazonaws.com/app/Competitions/000342/data/data.tar.gz"
+        code_dir = "https://aistages-api-public-prod.s3.amazonaws.com/app/Competitions/000342/data/code.tar.gz"
+        download_and_extract(data_dir, "./")
+        download_and_extract(code_dir, "./")
+        print("Downloaded data")
         df = pd.read_csv(data_path)
         if is_train:
             return self._prepare_train_data(df)
