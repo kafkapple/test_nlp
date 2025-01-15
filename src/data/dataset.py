@@ -45,11 +45,11 @@ def download_and_extract(url, output_dir="./"):
     print(f"Removed compressed file {download_path}")
 
 class DialogueDataset(Dataset):
-    def __init__(self, encoder_input, decoder_input=None, labels=None):
+    def __init__(self, encoder_input, decoder_input=None, labels=None, tokenizer=None):
         self.encoder_input = encoder_input
         self.decoder_input = decoder_input
         self.labels = labels
-        
+        self.tokenizer = tokenizer
         
     def __getitem__(self, idx):
         item = {key: val[idx].clone().detach() for key, val in self.encoder_input.items()}
@@ -60,7 +60,11 @@ class DialogueDataset(Dataset):
             item['decoder_attention_mask'] = decoder_item['attention_mask']
             
         if self.labels is not None:
-            item['labels'] = self.labels['input_ids'][idx]
+            labels = self.labels['input_ids'][idx].clone().detach()
+            # 패딩 토큰을 -100으로 변환
+            if self.tokenizer is not None:
+                labels[labels == self.tokenizer.pad_token_id] = -100
+            item['labels'] = labels
             
         return item
     
@@ -95,15 +99,9 @@ class DataProcessor:
             return_tensors='pt'
         )
         
-        # 타겟 텍스트 인코딩 - BOS와 EOS 토큰 추가
-        summaries_with_tokens = [
-            f"{self.tokenizer.bos_token}{summary}{self.tokenizer.eos_token}" 
-            for summary in df['summary']
-        ]
-        
-        # 라벨 인코딩
+        # 타겟 텍스트 인코딩
         labels = self.tokenizer(
-            summaries_with_tokens,
+            df['summary'].tolist(),  # BOS/EOS 토큰은 tokenizer가 자동으로 추가
             max_length=self.config.tokenizer.decoder_max_len,
             padding='max_length',
             truncation=True,
@@ -113,7 +111,8 @@ class DataProcessor:
         # DialogueDataset 인스턴스 반환
         return DialogueDataset(
             encoder_input=model_inputs,
-            labels=labels
+            labels=labels,
+            tokenizer=self.tokenizer  # tokenizer 전달
         )
         
     def _prepare_test_data(self, df):

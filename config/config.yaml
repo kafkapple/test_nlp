@@ -23,5 +23,5 @@ inference:
 
 wandb:
   project: "dialogue-summary"
-  entity: null
-  name: "baseline" 
+  entity: "ailab_upstage_fastcampus"
+  name: "baseline_run" 

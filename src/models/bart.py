@@ -16,7 +16,7 @@ class DialogueSummarizerConfig:
     tokenizer: TokenizerConfig
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
-class DialogueSummarizer:
+class BartSummarizer:
     def __init__(self, config: DialogueSummarizerConfig):
         self.config = config
         self.device = config.device

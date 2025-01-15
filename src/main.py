@@ -2,8 +2,8 @@ import hydra
 import wandb
 from omegaconf import DictConfig
 import pytorch_lightning as pl
-from models.dialogue_summarizer import (
-    DialogueSummarizer, 
+from models.bart import (
+    BartSummarizer, 
     DialogueSummarizerConfig,
     TokenizerConfig
 )
@@ -11,7 +11,7 @@ from data.dataset import DataProcessor
 from utils.metrics import compute_metrics
 from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments
 
-@hydra.main(version_base="1.2", config_path="../conf", config_name="config")
+@hydra.main(version_base="1.2", config_path="../config", config_name="config")
 def main(cfg: DictConfig):
     wandb.init(
         project=cfg.wandb.project,
@@ -31,7 +31,7 @@ def main(cfg: DictConfig):
             special_tokens=cfg.model.tokenizer.special_tokens
         )
     )
-    model = DialogueSummarizer(model_config)
+    model = BartSummarizer(model_config)
     
     # Prepare data
     processor = DataProcessor(model.tokenizer, model_config)

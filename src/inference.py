@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoTokenizer, BartForConditionalGeneration
 from data.dataset import DataProcessor
-from models.dialogue_summarizer import DialogueSummarizerConfig, TokenizerConfig, DialogueSummarizer
+from models.bart import DialogueSummarizerConfig, TokenizerConfig
 from omegaconf import DictConfig
 import os
 import pandas as pd
