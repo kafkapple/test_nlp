@@ -1,0 +1,9 @@
+defaults:
+  - model: kobart
+  - train: default
+  - _self_
+
+general:
+  data_path: ../data/
+  output_dir: ./outputs
+  seed: 42 
