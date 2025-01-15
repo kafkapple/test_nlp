@@ -19,7 +19,12 @@ class DialogueInference:
         
     def _load_model_and_tokenizer(self):
         tokenizer = AutoTokenizer.from_pretrained(self.cfg.model.name)
-        special_tokens_dict = {'additional_special_tokens': self.cfg.model.tokenizer.special_tokens.additional_special_tokens}
+        
+        # special tokens를 문자열로 변환하여 처리
+        special_tokens = [str(token) for token in self.cfg.model.tokenizer.special_tokens.additional_special_tokens]
+        special_tokens_dict = {'additional_special_tokens': special_tokens}
+        
+        # 특수 토큰 추가
         tokenizer.add_special_tokens(special_tokens_dict)
         
         model = BartForConditionalGeneration.from_pretrained(self.cfg.inference.ckt_path)

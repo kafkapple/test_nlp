@@ -77,12 +77,11 @@ def main(cfg: DictConfig):
     # Train model
     trainer.train()
     
-    # Inference (선택적)
-    if cfg.get('do_predict', False):
-        from inference import DialogueInference
-        inferencer = DialogueInference(cfg)
-        test_file_path = f"{cfg.general.data_path}/test.csv"
-        results = inferencer.inference(test_file_path)
+    # Inference
+    from inference import DialogueInference
+    inferencer = DialogueInference(cfg)
+    test_file_path = f"{cfg.general.data_path}/test.csv"
+    results = inferencer.inference(test_file_path)
     wandb.finish()
 if __name__ == "__main__":
     main() 
