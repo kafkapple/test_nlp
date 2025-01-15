@@ -85,28 +85,47 @@ class DataProcessor:
         return self._prepare_test_data(df)
         
     def _prepare_train_data(self, df):
-        encoder_inputs = self.tokenizer(
+        # 입력 텍스트 인코딩
+        model_inputs = self.tokenizer(
             df['dialogue'].tolist(),
-            return_tensors="pt",
-            padding=True,
+            max_length=self.config.tokenizer.encoder_max_len,
+            padding='max_length',
             truncation=True,
-            max_length=self.config.tokenizer_config['encoder_max_len']
+            return_tensors='pt'
         )
         
-        decoder_inputs = self.tokenizer(
-            [f"{self.config.tokenizer_config['bos_token']}{x}" for x in df['summary']],
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=self.config.tokenizer_config['decoder_max_len']
-        )
+        # 타겟 텍스트 인코딩 - BOS와 EOS 토큰 추가
+        summaries_with_tokens = [
+            f"{self.tokenizer.bos_token}{summary}{self.tokenizer.eos_token}" 
+            for summary in df['summary']
+        ]
         
+        # 라벨 인코딩
         labels = self.tokenizer(
-            [f"{x}{self.config.tokenizer_config['eos_token']}" for x in df['summary']],
-            return_tensors="pt",
-            padding=True,
+            summaries_with_tokens,
+            max_length=self.config.tokenizer.decoder_max_len,
+            padding='max_length',
             truncation=True,
-            max_length=self.config.tokenizer_config['decoder_max_len']
+            return_tensors='pt'
         )
         
-        return DialogueDataset(encoder_inputs, decoder_inputs, labels) 
+        # DialogueDataset 인스턴스 반환
+        return DialogueDataset(
+            encoder_input=model_inputs,
+            labels=labels
+        )
+        
+    def _prepare_test_data(self, df):
+        # 입력 텍스트 인코딩
+        model_inputs = self.tokenizer(
+            df['dialogue'].tolist(),
+            max_length=self.config.tokenizer.encoder_max_len,
+            padding='max_length',
+            truncation=True,
+            return_tensors='pt'
+        )
+        
+        # DialogueDataset 인스턴스 반환 (labels 없음)
+        return DialogueDataset(
+            encoder_input=model_inputs
+        ) 

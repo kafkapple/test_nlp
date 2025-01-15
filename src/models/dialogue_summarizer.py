@@ -24,8 +24,13 @@ class DialogueSummarizer:
         
     def _init_model(self):
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_name)
+        
+        # special tokens를 딕셔너리로 안전하게 변환
         special_tokens = {
-            'additional_special_tokens': self.config.tokenizer.special_tokens.additional_special_tokens
+            'additional_special_tokens': [
+                str(token) if not isinstance(token, str) else token 
+                for token in self.config.tokenizer.special_tokens.additional_special_tokens
+            ]
         }
         self.tokenizer.add_special_tokens(special_tokens)
         
