@@ -1,4 +1,5 @@
 import hydra
+import wandb
 from omegaconf import DictConfig
 import pytorch_lightning as pl
 from models.dialogue_summarizer import (
@@ -12,6 +13,11 @@ from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments
 
 @hydra.main(version_base="1.2", config_path="../conf", config_name="config")
 def main(cfg: DictConfig):
+    wandb.init(
+        project=cfg.wandb.project,
+        entity=cfg.wandb.entity,
+        name=cfg.wandb.name
+    )
     pl.seed_everything(cfg.general.seed)
     
     # Initialize model
@@ -77,6 +83,6 @@ def main(cfg: DictConfig):
         inferencer = DialogueInference(cfg)
         test_file_path = f"{cfg.general.data_path}/test.csv"
         results = inferencer.inference(test_file_path)
-
+    wandb.finish()
 if __name__ == "__main__":
     main() 
